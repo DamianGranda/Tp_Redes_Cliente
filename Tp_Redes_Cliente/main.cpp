@@ -19,7 +19,7 @@ public:
 
         WSAStartup(MAKEWORD(2,0), &WSAData);
         server = socket(AF_INET, SOCK_STREAM, 0);
-        addr.sin_addr.s_addr = inet_addr("192.168.1.101 ");
+        addr.sin_addr.s_addr = inet_addr("192.168.1.106 ");
         addr.sin_family = AF_INET;
         addr.sin_port = htons(puerto);
         connect(server, (SOCKADDR *)&addr, sizeof(addr));
