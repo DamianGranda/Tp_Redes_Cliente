@@ -22,9 +22,21 @@ public:
         addr.sin_addr.s_addr = inet_addr("192.168.1.106 ");
         addr.sin_family = AF_INET;
         addr.sin_port = htons(puerto);
-        connect(server, (SOCKADDR *)&addr, sizeof(addr));
-        cout << "Conectado al Servidor!" << endl;
-        cout << "=====¡Bienvenido Al Sistema!====="<< endl;
+        if(puerto!= 5000){
+            cout<<"Error, solo se permite el puerto 5000."<<endl;
+             exit(0);
+
+        }
+        if(connect(server, (SOCKADDR *)&addr, sizeof(addr))==SOCKET_ERROR)
+        {
+            cout<<"Error, no se encontro servidor con ese puerto."<<endl;
+            system("pause");
+             exit(0);
+        }else{
+            cout << "Conectado al Servidor!" << endl;
+            system("pause");
+            system("cls");
+        }
     }
 
     void Enviar(){
@@ -47,18 +59,18 @@ public:
 
     void Recibir(){
     recv(server, buffer, sizeof(buffer), 0);
-    cout << "El servidor dice: " << buffer << endl;
+    cout << "Resultado: " << buffer << endl;
     }
 
     void Punto2(){
-    char aux[1024]=" ";
+    char auxChar[1024]=" ";
     int i=0;
-        for(i=0;i<strlen(aux);i++){
-            if(aux[i] == ' ')//esta vacio
+        for(i=0;i<strlen(auxChar);i++){
+            if(auxChar[i] == ' ')
                 {
-                recv(server, aux, sizeof(aux), 0);
-                cout<< aux << endl;
-                i=0;//lo uso para que el bucle sea"infinito " hasta que traiga todo la actividad
+                recv(server, auxChar, sizeof(auxChar), 0);
+                cout<< auxChar << endl;
+                i=0;
             }
         }
 
@@ -89,11 +101,16 @@ public:
     }
 
 
+    void SinRetorno(){
+    recv(server, buffer, sizeof(buffer), 0);
+    }
+
+
 };
 
 int main()
 {
-
+    bool regresar=false;
     int opcion=0;
     int puerto=0;
     cout<<"Por favor ingrese el numero de puerto:"<<endl;
@@ -103,38 +120,75 @@ int main()
     clock_t t;
     t=clock();
     t=clock()-t;
-    while(t/CLOCKS_PER_SEC<=120){
-        cout << "----------BIENVENIDO AL MENU----------" <<endl << endl;
-        cout << "1-Calcular" <<endl;
-        cout << "2-Ver Registros De Actividades" <<endl;
-        cout << "0-Cerrar Sesion" <<endl;
+    while (regresar == false){
 
-        cout << "Digite su opcion" <<endl;
+            t=clock()-t;
+                if(t/CLOCKS_PER_SEC>=180){
+
+                    cout<<"---- Desconectado por inactividad. Superaste los 3 minutos. ----"<<endl;
+                    regresar=true;
+                    Cliente->regresar=false;
+
+                    Cliente->SinRetorno();
+                    }
+
+        cout << endl;
+        cout<<  "######################################################"<<endl;
+        cout << "####\t ----------BIENVENIDO AL MENU----------   ####" <<endl;
+        cout << "####\t1 .- Calcular                             ####" <<endl;
+        cout << "####\t2 .- Ver Registros De Actividades         ####" <<endl;
+        cout << "####\t0 .- Cerrar Sesion                        ####" <<endl;
+         cout<< "######################################################"<<endl;
+        cout << "\t Digite su opcion:";
         cin >> opcion;
 
         switch(opcion){
         case 1:
             Cliente->enviarAutomaticamente(opcion);
-            Cliente->Recibir();
+            system("cls");
+            cout<<"Ingrese el calculo a resolver o escriba 'volver' para regresar al menu.\n"<<endl;
+                Cliente->Enviar();
+                t=clock()-t;
+                if(t/CLOCKS_PER_SEC>=180){
+
+                    cout<<"---- Desconectado por inactividad. Superaste los 3 minutos. ----"<<endl;
+                    regresar=true;
+                    Cliente->regresar=false;
+
+                    Cliente->SinRetorno();
+                    }else{
+                    Cliente->Recibir();
+                    }
+
+                memset(Cliente->buffer,0,sizeof(Cliente->buffer));
+                Cliente->regresar=true;
         break;
         case 2:
+                system("cls");
                 Cliente->enviarAutomaticamente(opcion);
                 cout<<"El registro es:"<<endl;
                 Cliente->Punto2();
                 break;
             case 0:
                 Cliente->enviarAutomaticamente(opcion);
-                cout<< "Usted se desconecto.Hasta la proxima."<< endl;break;
+                cout<< "Usted se desconecto.Hasta la proxima."<< endl;
+                regresar=true;
+                break;
+
             default:
                 cout << "Error, esa opcion no existe"<< endl;
         }
 
+
     }//WHILE
+    if(regresar==true){
+        Cliente->enviarAutomaticamente(4);
+    }
 
-    if(t/CLOCKS_PER_SEC>=120){
+    if(t/CLOCKS_PER_SEC>=180){
 
-        cout<<"---- Desconectado por inactividad. Superaste los 2 minutos. ----"<<endl;
-        Cliente->enviarAutomaticamente(4);//le mando la opcion 4
+        cout<<"---- Desconectado por inactividad. Superaste los 3 minutos. ----"<<endl;
+        Cliente->enviarAutomaticamente(4);
         return 0;
     }
 
